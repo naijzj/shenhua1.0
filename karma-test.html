@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>因果系统测试 - 神话·天命</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="karma-styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1 class="game-title">神话·天命</h1>
+            <div class="player-info">
+                <span>因果系统测试界面</span>
+            </div>
+        </header>
+        
+        <main class="game-content">
+            <div class="karma-test-container">
+                <h2 class="karma-test-header">因果系统测试</h2>
+                
+                <div class="karma-value-display">
+                    <div>当前因果值: <span id="current-karma">0</span></div>
+                    <div>善行累计: <span id="good-deeds">0</span></div>
+                    <div>恶行累计: <span id="evil-deeds">0</span></div>
+                </div>
+                
+                <div class="test-panel">
+                    <button class="test-button" id="add-small">增加因果 (+10)</button>
+                    <button class="test-button" id="add-medium">增加因果 (+50)</button>
+                    <button class="test-button" id="add-large">增加因果 (+100)</button>
+                    <button class="test-button" id="reduce-small">减少因果 (-10)</button>
+                    <button class="test-button" id="reduce-medium">减少因果 (-50)</button>
+                    <button class="test-button" id="reduce-large">减少因果 (-100)</button>
+                    <button class="test-button" id="trigger-next">触发下一个事件</button>
+                    <button class="test-button" id="reset-karma">重置因果</button>
+                </div>
+                
+                <div class="event-list-container">
+                    <h3 class="event-list-title">因果事件列表</h3>
+                    <div class="event-list" id="event-list">
+                        <!-- 事件卡片将通过JavaScript动态加载 -->
+                    </div>
+                </div>
+                
+                <div class="test-action-log">
+                    <div class="log-entry">因果测试系统已初始化...</div>
+                </div>
+                
+                <a href="index.html" class="back-link">← 返回主界面</a>
+            </div>
+        </main>
+    </div>
+    
+    <!-- 加载脚本 -->
+    <script type="module">
+        import KarmaManager from './karma-manager.js';
+        import { KARMA_EVENTS, getNextEvents } from './events.js';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化数据显示
+            updateKarmaDisplay();
+            
+            // 加载事件列表
+            loadEventsList();
+            
+            // 绑定按钮事件
+            document.getElementById('add-small').addEventListener('click', () => {
+                KarmaManager.updateKarma(10);
+                logAction('增加因果值 +10', 'karma-increase');
+                updateKarmaDisplay();
+            });
+            
+            document.getElementById('add-medium').addEventListener('click', () => {
+                KarmaManager.updateKarma(50);
+                logAction('增加因果值 +50', 'karma-increase');
+                updateKarmaDisplay();
+            });
+            
+            document.getElementById('add-large').addEventListener('click', () => {
+                KarmaManager.updateKarma(100);
+                logAction('增加因果值 +100', 'karma-increase');
+                updateKarmaDisplay();
+            });
+            
+            document.getElementById('reduce-small').addEventListener('click', () => {
+                KarmaManager.updateKarma(-10);
+                logAction('减少因果值 -10', 'karma-decrease');
+                updateKarmaDisplay();
+            });
+            
+            document.getElementById('reduce-medium').addEventListener('click', () => {
+                KarmaManager.updateKarma(-50);
+                logAction('减少因果值 -50', 'karma-decrease');
+                updateKarmaDisplay();
+            });
+            
+            document.getElementById('reduce-large').addEventListener('click', () => {
+                KarmaManager.updateKarma(-100);
+                logAction('减少因果值 -100', 'karma-decrease');
+                updateKarmaDisplay();
+            });
+            
+            document.getElementById('trigger-next').addEventListener('click', () => {
+                const nextEvents = getNextEvents(KarmaManager.getKarma());
+                if (nextEvents && nextEvents.length > 0) {
+                    const nextEvent = nextEvents[0];
+                    // 增加因果值到触发阈值
+                    const neededKarma = nextEvent.karmaThreshold - KarmaManager.getKarma();
+                    if (neededKarma > 0) {
+                        KarmaManager.updateKarma(neededKarma);
+                        logAction(`增加因果值 +${neededKarma} 以触发事件`, 'karma-increase');
+                    }
+                    logAction(`尝试触发事件: ${nextEvent.title}`, 'event-trigger');
+                    updateKarmaDisplay();
+                } else {
+                    logAction('没有更多事件可触发', 'event-trigger');
+                }
+            });
+            
+            document.getElementById('reset-karma').addEventListener('click', () => {
+                // 重置因果数据
+                localStorage.removeItem('playerKarma');
+                localStorage.removeItem('triggeredEvents');
+                location.reload(); // 刷新页面
+            });
+            
+            // 监听因果变化，更新显示
+            KarmaManager.onKarmaChange(() => {
+                updateKarmaDisplay();
+            });
+        });
+        
+        function updateKarmaDisplay() {
+            const karmaData = KarmaManager.getKarmaData();
+            document.getElementById('current-karma').textContent = Math.floor(karmaData.karma);
+            document.getElementById('good-deeds').textContent = Math.floor(karmaData.goodDeeds);
+            document.getElementById('evil-deeds').textContent = Math.floor(karmaData.evilDeeds);
+            
+            // 高亮下一个会触发的事件
+            highlightNextEvent();
+        }
+        
+        function loadEventsList() {
+            const eventListContainer = document.getElementById('event-list');
+            
+            // 清空容器
+            eventListContainer.innerHTML = '';
+            
+            // 按阈值排序事件
+            const sortedEvents = [...KARMA_EVENTS].sort((a, b) => a.karmaThreshold - b.karmaThreshold);
+            
+            // 添加事件卡片
+            sortedEvents.forEach(event => {
+                const eventCard = document.createElement('div');
+                eventCard.className = 'event-card';
+                eventCard.id = `event-${event.id}`;
+                
+                eventCard.innerHTML = `
+                    <div class="event-title">${event.title}</div>
+                    <div class="event-description">${event.description}</div>
+                    <div class="event-effect">${event.effect}</div>
+                    <div class="event-threshold">因果阈值: ${event.karmaThreshold}</div>
+                `;
+                
+                eventListContainer.appendChild(eventCard);
+            });
+        }
+        
+        function highlightNextEvent() {
+            // 清除所有高亮
+            document.querySelectorAll('.event-card').forEach(card => {
+                card.style.borderColor = '#5e3a8b';
+                card.style.boxShadow = 'none';
+            });
+            
+            // 获取下一个事件
+            const nextEvents = getNextEvents(KarmaManager.getKarma());
+            if (nextEvents && nextEvents.length > 0) {
+                const nextEvent = nextEvents[0];
+                const nextEventCard = document.getElementById(`event-${nextEvent.id}`);
+                
+                if (nextEventCard) {
+                    nextEventCard.style.borderColor = nextEvent.color || '#e94560';
+                    nextEventCard.style.boxShadow = `0 0 10px ${nextEvent.color || '#e94560'}`;
+                    
+                    // 滚动到下一个事件
+                    nextEventCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        }
+        
+        function logAction(message, className = '') {
+            const log = document.querySelector('.test-action-log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${className}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+    </script>
+</body>
+</html> 

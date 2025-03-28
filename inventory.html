@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>背包 - 神话·天命</title>
+    <link rel="stylesheet" href="inventory-styles.css">
+    <script src="player.js" type="module" defer></script>
+    <script src="inventory.js" type="module" defer></script>
+    <style>
+        /* 售卖成功消息样式 */
+        .sell-success-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(126, 60, 20, 0.9);
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid #d9a566;
+            opacity: 0;
+            animation: fadeInUp 0.5s forwards;
+            font-weight: bold;
+            z-index: 9999;
+        }
+        
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translate(-50%, 20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translate(-50%, 0); 
+            }
+        }
+        
+        .sell-success-message.fade-out {
+            animation: fadeOutDown 1s forwards;
+        }
+        
+        @keyframes fadeOutDown {
+            from { 
+                opacity: 1; 
+                transform: translate(-50%, 0); 
+            }
+            to { 
+                opacity: 0; 
+                transform: translate(-50%, 20px); 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>背包</h1>
+            <div class="player-status">
+                <div class="player-currency">
+                    <span class="currency-label">灵石:</span>
+                    <span class="currency-value">1500</span>
+                </div>
+                <div class="inventory-capacity">
+                    <span class="capacity-label">容量:</span>
+                    <span class="capacity-value">0/20</span>
+                </div>
+                <button class="back-btn" onclick="window.location.href='index.html'">返回修仙界面</button>
+            </div>
+        </header>
+        
+        <main>
+            <!-- 分类筛选 -->
+            <div class="filter-container">
+                <h3>物品分类</h3>
+                <div class="category-filters">
+                    <button class="category-filter" data-category="丹药">丹药</button>
+                    <button class="category-filter" data-category="法宝">法宝</button>
+                    <button class="category-filter" data-category="典籍">典籍</button>
+                    <button class="category-filter-all active">全部</button>
+                </div>
+                <div class="sort-options">
+                    <label for="sort-select">排序方式:</label>
+                    <select id="sort-select">
+                        <option value="category">按类型</option>
+                        <option value="rarity">按品质</option>
+                        <option value="value">按价值</option>
+                        <option value="name">按名称</option>
+                    </select>
+                    <button class="sort-direction" title="切换排序方向">↑</button>
+                </div>
+            </div>
+            
+            <!-- 物品列表 -->
+            <section class="inventory-grid">
+                <!-- 物品将由JS动态生成 -->
+                <div class="empty-inventory-message">背包中没有物品</div>
+            </section>
+            
+            <!-- 物品详情 -->
+            <div class="item-details-panel" style="display: none;">
+                <div class="detail-header">
+                    <h3 class="detail-title">物品详情</h3>
+                    <button class="close-detail-btn">×</button>
+                </div>
+                <div class="detail-content">
+                    <div class="detail-icon-container">
+                        <img src="" alt="" class="detail-icon">
+                    </div>
+                    <div class="detail-info">
+                        <h4 class="detail-name"></h4>
+                        <div class="detail-rarity"></div>
+                        <p class="detail-description"></p>
+                        <div class="detail-effects"></div>
+                        <div class="detail-stats">
+                            <div class="detail-category"></div>
+                            <div class="detail-quantity"></div>
+                            <div class="detail-value"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-actions">
+                    <button class="use-item-btn">使用</button>
+                    <button class="equip-item-btn">装备</button>
+                    <button class="sell-item-btn">出售</button>
+                    <div class="sell-quantity-controls" style="display: none;">
+                        <button class="quantity-minus">-</button>
+                        <input type="number" class="quantity-input" value="1" min="1" max="1">
+                        <button class="quantity-plus">+</button>
+                        <button class="confirm-sell-btn">确认出售</button>
+                        <button class="cancel-sell-btn">取消</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import InventoryInstance from './inventory.js';
+        import PlayerModule from './player.js';
+        
+        // 页面加载后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 当前选中的物品ID
+            let selectedItemId = null;
+            
+            // 当前排序方式和方向
+            let currentSort = 'category';
+            let sortAscending = true;
+            
+            // 当前筛选分类
+            let currentFilter = null;
+            
+            // 更新玩家灵石和背包容量显示
+            const updatePlayerStatus = () => {
+                const currencyValue = document.querySelector('.currency-value');
+                const capacityValue = document.querySelector('.capacity-value');
+                
+                if (currencyValue) {
+                    currencyValue.textContent = PlayerModule.getCurrency();
+                }
+                
+                if (capacityValue) {
+                    const inventory = InventoryInstance.inventory;
+                    capacityValue.textContent = `${inventory.items.length}/${inventory.maxSize}`;
+                }
+            };
+            
+            // 渲染背包物品
+            const renderInventory = () => {
+                const inventoryGrid = document.querySelector('.inventory-grid');
+                const emptyMessage = document.querySelector('.empty-inventory-message');
+                
+                if (!inventoryGrid) return;
+                
+                // 清空物品网格
+                inventoryGrid.innerHTML = '';
+                
+                // 获取物品列表
+                let items = InventoryInstance.getAllItems();
+                
+                // 根据当前筛选条件过滤
+                if (currentFilter) {
+                    items = items.filter(item => item.category === currentFilter);
+                }
+                
+                // 显示或隐藏空背包消息
+                if (items.length === 0) {
+                    emptyMessage.style.display = 'block';
+                    inventoryGrid.appendChild(emptyMessage);
+                    return;
+                } else {
+                    emptyMessage.style.display = 'none';
+                }
+                
+                // 创建物品格子
+                items.forEach(item => {
+                    const itemSlot = document.createElement('div');
+                    itemSlot.className = `inventory-slot${InventoryInstance.isEquipped(item.id) ? ' equipped' : ''}`;
+                    itemSlot.dataset.itemId = item.id;
+                    
+                    // 设置物品内容
+                    itemSlot.innerHTML = `
+                        <div class="item-rarity" style="background-color: ${item.rarity.color}"></div>
+                        <div class="item-icon-container">
+                            <img src="${item.icon}" alt="${item.name}" class="item-icon" onerror="this.src='assets/icons/default.png'">
+                            ${item.quantity > 1 ? `<span class="item-quantity">${item.quantity}</span>` : ''}
+                        </div>
+                        <div class="item-name">${item.name}</div>
+                        ${InventoryInstance.isEquipped(item.id) ? '<div class="equipped-badge">已装备</div>' : ''}
+                    `;
+                    
+                    // 添加点击事件
+                    itemSlot.addEventListener('click', () => {
+                        showItemDetails(item.id);
+                    });
+                    
+                    // 添加到网格
+                    inventoryGrid.appendChild(itemSlot);
+                });
+            };
+            
+            // 显示物品详情
+            const showItemDetails = (itemId) => {
+                selectedItemId = itemId;
+                const item = InventoryInstance.inventory.items.find(item => item.id === itemId);
+                if (!item) return;
+                
+                const detailsPanel = document.querySelector('.item-details-panel');
+                const detailIcon = detailsPanel.querySelector('.detail-icon');
+                const detailName = detailsPanel.querySelector('.detail-name');
+                const detailRarity = detailsPanel.querySelector('.detail-rarity');
+                const detailDescription = detailsPanel.querySelector('.detail-description');
+                const detailEffects = detailsPanel.querySelector('.detail-effects');
+                const detailCategory = detailsPanel.querySelector('.detail-category');
+                const detailQuantity = detailsPanel.querySelector('.detail-quantity');
+                const detailValue = detailsPanel.querySelector('.detail-value');
+                
+                // 更新详情内容
+                detailIcon.src = item.icon;
+                detailIcon.alt = item.name;
+                detailName.textContent = item.name;
+                detailRarity.textContent = item.rarity.name;
+                detailRarity.style.color = item.rarity.color;
+                detailDescription.textContent = item.description;
+                
+                // 设置效果描述
+                let effectsText = '';
+                if (item.effects) {
+                    if (item.effects.cultivation) {
+                        effectsText += `<div>增加修为: +${item.effects.cultivation}</div>`;
+                    }
+                    if (item.effects.cultivationBoost) {
+                        effectsText += `<div>修炼效率: +${item.effects.cultivationBoost * 100}%</div>`;
+                    }
+                    if (item.effects.breakthroughBoost) {
+                        effectsText += `<div>突破几率: +${item.effects.breakthroughBoost * 100}%</div>`;
+                    }
+                    if (item.effects.duration && item.effects.duration > 0) {
+                        const hours = Math.floor(item.effects.duration / 3600);
+                        effectsText += `<div>持续时间: ${hours}小时</div>`;
+                    } else if (item.effects.duration === -1) {
+                        effectsText += `<div>持续时间: 永久</div>`;
+                    }
+                    if (item.effects.charges) {
+                        effectsText += `<div>使用次数: ${item.effects.charges}</div>`;
+                    }
+                }
+                detailEffects.innerHTML = effectsText;
+                
+                // 设置基本信息
+                detailCategory.textContent = `分类: ${item.category}`;
+                detailQuantity.textContent = `数量: ${item.quantity}`;
+                
+                // 设置价值
+                const sellValue = item.sellPrice || Math.floor(item.basePrice * 0.5);
+                detailValue.textContent = `出售价: ${sellValue} 灵石`;
+                
+                // 设置按钮状态
+                const useBtn = detailsPanel.querySelector('.use-item-btn');
+                const equipBtn = detailsPanel.querySelector('.equip-item-btn');
+                const sellBtn = detailsPanel.querySelector('.sell-item-btn');
+                
+                // 丹药和典籍可以使用
+                useBtn.style.display = (item.category === '丹药' || item.category === '典籍') ? 'block' : 'none';
+                
+                // 法宝可以装备
+                equipBtn.style.display = item.category === '法宝' ? 'block' : 'none';
+                
+                // 已装备的物品更新装备按钮状态
+                if (InventoryInstance.isEquipped(item.id)) {
+                    equipBtn.textContent = '卸下';
+                } else {
+                    equipBtn.textContent = '装备';
+                }
+                
+                // 设置出售数量控件最大值
+                const quantityInput = detailsPanel.querySelector('.quantity-input');
+                quantityInput.max = item.quantity;
+                quantityInput.value = 1;
+                
+                // 显示详情面板
+                detailsPanel.style.display = 'block';
+                
+                // 高亮选中的物品
+                document.querySelectorAll('.inventory-slot').forEach(slot => {
+                    slot.classList.remove('selected');
+                });
+                document.querySelector(`.inventory-slot[data-item-id="${itemId}"]`)?.classList.add('selected');
+            };
+            
+            // 隐藏物品详情
+            const hideItemDetails = () => {
+                document.querySelector('.item-details-panel').style.display = 'none';
+                document.querySelectorAll('.inventory-slot').forEach(slot => {
+                    slot.classList.remove('selected');
+                });
+                
+                // 隐藏出售数量控件
+                document.querySelector('.sell-quantity-controls').style.display = 'none';
+                document.querySelector('.use-item-btn').style.display = 'block';
+                document.querySelector('.equip-item-btn').style.display = 'block';
+                document.querySelector('.sell-item-btn').style.display = 'block';
+                
+                selectedItemId = null;
+            };
+            
+            // 使用物品
+            const useItem = (itemId) => {
+                const result = InventoryInstance.useItem(itemId);
+                if (result) {
+                    // 使用成功，隐藏详情并刷新背包
+                    hideItemDetails();
+                    renderInventory();
+                    updatePlayerStatus();
+                }
+            };
+            
+            // 装备/卸下物品
+            const toggleEquip = (itemId) => {
+                const item = InventoryInstance.inventory.items.find(item => item.id === itemId);
+                if (!item) return;
+                
+                if (InventoryInstance.isEquipped(itemId)) {
+                    // 卸下装备
+                    InventoryInstance.unequipItem(item.category);
+                } else {
+                    // 装备物品
+                    InventoryInstance.equipItem(itemId);
+                }
+                
+                // 更新UI
+                hideItemDetails();
+                renderInventory();
+            };
+            
+            // 出售物品
+            const sellItem = (itemId, quantity) => {
+                const result = InventoryInstance.sellItem(itemId, quantity);
+                if (result > 0) {
+                    // 显示出售成功提示
+                    showSellSuccessMessage(result);
+                    
+                    // 更新UI
+                    hideItemDetails();
+                    renderInventory();
+                    updatePlayerStatus();
+                }
+            };
+            
+            // 显示出售成功消息
+            const showSellSuccessMessage = (amount) => {
+                const message = document.createElement('div');
+                message.className = 'sell-success-message';
+                message.textContent = `出售成功，获得 ${amount} 灵石`;
+                
+                document.body.appendChild(message);
+                
+                // 2秒后移除消息
+                setTimeout(() => {
+                    message.classList.add('fade-out');
+                    setTimeout(() => {
+                        document.body.removeChild(message);
+                    }, 500);
+                }, 2000);
+            };
+            
+            // 初始化背包
+            updatePlayerStatus();
+            renderInventory();
+            
+            // 观察背包变化
+            InventoryInstance.addObserver(() => {
+                renderInventory();
+                updatePlayerStatus();
+            });
+            
+            // 绑定分类筛选事件
+            document.querySelectorAll('.category-filter').forEach(button => {
+                button.addEventListener('click', () => {
+                    const category = button.dataset.category;
+                    
+                    // 更新当前筛选
+                    currentFilter = currentFilter === category ? null : category;
+                    
+                    // 更新按钮状态
+                    document.querySelectorAll('.category-filter, .category-filter-all').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    if (currentFilter) {
+                        button.classList.add('active');
+                    } else {
+                        document.querySelector('.category-filter-all').classList.add('active');
+                    }
+                    
+                    // 刷新背包
+                    renderInventory();
+                });
+            });
+            
+            // 绑定"全部"筛选按钮
+            document.querySelector('.category-filter-all').addEventListener('click', () => {
+                currentFilter = null;
+                
+                // 更新按钮状态
+                document.querySelectorAll('.category-filter, .category-filter-all').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector('.category-filter-all').classList.add('active');
+                
+                // 刷新背包
+                renderInventory();
+            });
+            
+            // 绑定排序选择事件
+            document.querySelector('#sort-select').addEventListener('change', (e) => {
+                currentSort = e.target.value;
+                InventoryInstance.sortInventory(currentSort, sortAscending);
+            });
+            
+            // 绑定排序方向按钮
+            document.querySelector('.sort-direction').addEventListener('click', () => {
+                sortAscending = !sortAscending;
+                document.querySelector('.sort-direction').textContent = sortAscending ? '↑' : '↓';
+                InventoryInstance.sortInventory(currentSort, sortAscending);
+            });
+            
+            // 绑定关闭详情按钮
+            document.querySelector('.close-detail-btn').addEventListener('click', hideItemDetails);
+            
+            // 绑定使用物品按钮
+            document.querySelector('.use-item-btn').addEventListener('click', () => {
+                if (selectedItemId) useItem(selectedItemId);
+            });
+            
+            // 绑定装备物品按钮
+            document.querySelector('.equip-item-btn').addEventListener('click', () => {
+                if (selectedItemId) toggleEquip(selectedItemId);
+            });
+            
+            // 绑定出售物品按钮
+            document.querySelector('.sell-item-btn').addEventListener('click', () => {
+                // 显示出售数量控件
+                document.querySelector('.sell-quantity-controls').style.display = 'flex';
+                document.querySelector('.use-item-btn').style.display = 'none';
+                document.querySelector('.equip-item-btn').style.display = 'none';
+                document.querySelector('.sell-item-btn').style.display = 'none';
+                
+                // 重置数量
+                const item = InventoryInstance.inventory.items.find(item => item.id === selectedItemId);
+                if (item) {
+                    const quantityInput = document.querySelector('.quantity-input');
+                    quantityInput.max = item.quantity;
+                    quantityInput.value = 1;
+                }
+            });
+            
+            // 绑定数量控制按钮
+            document.querySelector('.quantity-minus').addEventListener('click', () => {
+                const input = document.querySelector('.quantity-input');
+                input.value = Math.max(1, parseInt(input.value) - 1);
+            });
+            
+            document.querySelector('.quantity-plus').addEventListener('click', () => {
+                const input = document.querySelector('.quantity-input');
+                input.value = Math.min(parseInt(input.max), parseInt(input.value) + 1);
+            });
+            
+            // 绑定确认出售按钮
+            document.querySelector('.confirm-sell-btn').addEventListener('click', () => {
+                if (selectedItemId) {
+                    const quantity = parseInt(document.querySelector('.quantity-input').value);
+                    sellItem(selectedItemId, quantity);
+                }
+            });
+            
+            // 绑定取消出售按钮
+            document.querySelector('.cancel-sell-btn').addEventListener('click', () => {
+                // 隐藏出售数量控件
+                document.querySelector('.sell-quantity-controls').style.display = 'none';
+                document.querySelector('.use-item-btn').style.display = 'block';
+                document.querySelector('.equip-item-btn').style.display = 'block';
+                document.querySelector('.sell-item-btn').style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html> 

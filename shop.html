@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宝物阁 - 神话·天命</title>
+    <link rel="stylesheet" href="shop-styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- 顶部标题与玩家状态 -->
+        <header class="shop-header">
+            <div class="back-button">
+                <a href="index.html">返回</a>
+            </div>
+            <h1 class="shop-title">宝物阁</h1>
+            <div class="player-status">
+                <div class="player-currency">
+                    <span class="currency-icon">💰</span>
+                    <span class="currency-amount">0</span>
+                    <span class="currency-name">灵石</span>
+                </div>
+                <div class="rate-info">
+                    <span>灵石价格:</span>
+                    <span class="spirit-stone-rate">100%</span>
+                </div>
+            </div>
+        </header>
+        
+        <!-- 视图切换控制 -->
+        <div class="view-toggle-container">
+            <button class="view-toggle active" data-view="buy">购买</button>
+            <button class="view-toggle" data-view="sell">出售</button>
+        </div>
+
+        <!-- 筛选器 -->
+        <div class="filter-container">
+            <div class="filter-title">分类筛选：</div>
+            <div class="filter-buttons">
+                <button class="category-filter" data-category="丹药">丹药</button>
+                <button class="category-filter" data-category="法宝">法宝</button>
+                <button class="category-filter" data-category="典籍">典籍</button>
+            </div>
+        </div>
+        
+        <!-- 商品展示区域（购买） -->
+        <div class="treasure-shop">
+            <!-- 商品卡片将通过JavaScript动态添加 -->
+        </div>
+        
+        <!-- 物品出售区域（出售） -->
+        <div class="sell-items" style="display: none;">
+            <!-- 出售的物品将通过JavaScript动态添加 -->
+        </div>
+    </div>
+    
+    <!-- 脚本引入 -->
+    <script type="module">
+        import TreasureShop from './treasure-shop.js';
+        import PlayerModule from './player.js';
+        
+        // 初始化商店
+        const shop = new TreasureShop();
+        
+        // 更新玩家灵石显示
+        function updateCurrencyDisplay() {
+            const currencyElement = document.querySelector('.currency-amount');
+            if (currencyElement) {
+                currencyElement.textContent = PlayerModule.getCurrency();
+            }
+        }
+        
+        // 观察玩家灵石变化
+        PlayerModule.addObserver(updateCurrencyDisplay);
+        
+        // 初始显示灵石数量
+        updateCurrencyDisplay();
+    </script>
+</body>
+</html> 

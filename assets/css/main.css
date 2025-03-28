@@ -1,0 +1,252 @@
+/**
+ * 主要样式 - 神话·天命
+ */
+
+/* 基础样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Microsoft YaHei', Arial, sans-serif;
+    background: #1a1a2e;
+    color: #f5f5f5;
+    line-height: 1.6;
+    background-image: url('../images/bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* 隐藏默认滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(20, 15, 35, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #5e3a8b;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #9a7bcc;
+}
+
+/* 游戏容器 */
+.game-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(20, 15, 35, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+/* 游戏头部 */
+.game-header {
+    background: linear-gradient(to right, #16213e, #0f3460);
+    padding: 15px 20px;
+    border-bottom: 2px solid #9a7bcc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.game-title {
+    color: #e94560;
+    font-size: 2rem;
+    text-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
+    margin: 0;
+}
+
+.player-info {
+    text-align: right;
+}
+
+.player-name {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #f5f5f5;
+    margin-bottom: 5px;
+}
+
+.player-rank {
+    font-size: 0.9rem;
+    color: #9a7bcc;
+    padding: 3px 8px;
+    background-color: rgba(94, 58, 139, 0.3);
+    border-radius: 4px;
+}
+
+/* 游戏内容 */
+.game-content {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+}
+
+/* 导航菜单 */
+.game-navigation {
+    width: 180px;
+    background-color: rgba(22, 33, 62, 0.9);
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.nav-button {
+    background: linear-gradient(to right, #5e3a8b80, #9a7bcc80);
+    border: 1px solid #5e3a8b;
+    border-radius: 4px;
+    padding: 10px;
+    color: #f5f5f5;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.nav-button:hover {
+    background: linear-gradient(to right, #5e3a8b, #9a7bcc);
+    box-shadow: 0 0 10px rgba(154, 123, 204, 0.5);
+    transform: translateY(-2px);
+}
+
+.nav-button:active {
+    transform: translateY(0);
+}
+
+/* 主视图 */
+.game-main-view {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.welcome-message {
+    background-color: rgba(15, 52, 96, 0.6);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.welcome-message h2 {
+    color: #e94560;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+.welcome-message p {
+    color: #f5f5f5;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+/* 游戏底部 */
+.game-footer {
+    background-color: rgba(22, 33, 62, 0.9);
+    padding: 10px 20px;
+    border-top: 2px solid #9a7bcc;
+}
+
+.resources {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+}
+
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.resource-icon {
+    font-size: 1.2rem;
+}
+
+.resource-value {
+    font-weight: bold;
+    color: #f5f5f5;
+}
+
+.resource-label {
+    color: #9a7bcc;
+    font-size: 0.9rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .game-content {
+        flex-direction: column;
+    }
+    
+    .game-navigation {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 10px;
+    }
+    
+    .nav-button {
+        flex: 1 0 auto;
+        white-space: nowrap;
+    }
+    
+    .game-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .player-info {
+        text-align: center;
+    }
+}
+
+/* 通用动画 */
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fade-in 0.5s ease-in;
+}
+
+/* 加载动画 */
+.loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(26, 26, 46, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(154, 123, 204, 0.3);
+    border-radius: 50%;
+    border-top-color: #9a7bcc;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+} 

@@ -1,0 +1,617 @@
+/**
+ * 修炼界面样式 - 神话·天命
+ */
+
+/* 主容器 */
+.cultivation-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    max-width: 90vw;
+    max-height: 90vh;
+    background-color: rgba(30, 20, 40, 0.95);
+    border: 2px solid #9a7bcc;
+    border-radius: 10px;
+    color: #f5f5f5;
+    box-shadow: 0 0 20px rgba(154, 123, 204, 0.5);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    overflow: hidden;
+}
+
+.cultivation-container.visible {
+    opacity: 1;
+}
+
+/* 头部 */
+.cultivation-header {
+    padding: 10px 15px;
+    background: linear-gradient(to right, #5e3a8b, #9a7bcc);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #9a7bcc;
+}
+
+.cultivation-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.close-btn:hover {
+    opacity: 1;
+}
+
+/* 内容区域 */
+.cultivation-status-panel {
+    padding: 15px;
+    background-color: rgba(40, 30, 50, 0.7);
+    border-bottom: 1px solid #5e3a8b;
+}
+
+.rank-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.rank-info h3 {
+    width: 100%;
+    margin: 0 0 10px 0;
+    font-size: 1.1rem;
+    color: #c2a6e8;
+}
+
+.rank-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #f5f5f5;
+    margin-right: 15px;
+    text-shadow: 0 0 5px rgba(154, 123, 204, 0.8);
+}
+
+.level-display {
+    font-size: 1.1rem;
+    color: #c2a6e8;
+    padding: 3px 8px;
+    background-color: rgba(94, 58, 139, 0.4);
+    border-radius: 4px;
+}
+
+/* 进度条 */
+.progress-container {
+    margin: 15px 0;
+}
+
+.progress-label {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    color: #c2a6e8;
+}
+
+.progress-bar-wrapper {
+    height: 20px;
+    background-color: rgba(20, 15, 25, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(to right, #5e3a8b, #9a7bcc);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+    position: relative;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* 突破按钮 */
+.breakthrough-btn {
+    display: block;
+    width: 100%;
+    padding: 8px 15px;
+    background: linear-gradient(to right, #5e3a8b, #7a5bac);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 10px 0;
+}
+
+.breakthrough-btn:hover:not(:disabled) {
+    background: linear-gradient(to right, #7a5bac, #9a7bcc);
+    box-shadow: 0 0 10px rgba(154, 123, 204, 0.5);
+}
+
+.breakthrough-btn:disabled {
+    background: linear-gradient(to right, #444, #666);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* 境界描述 */
+.description-container {
+    margin-top: 15px;
+    background-color: rgba(20, 15, 25, 0.3);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.description-container h4 {
+    margin: 0 0 5px 0;
+    font-size: 1rem;
+    color: #c2a6e8;
+}
+
+.rank-description {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #ddd;
+}
+
+/* 功法选择器 */
+.technique-selector {
+    padding: 15px;
+    background-color: rgba(35, 25, 45, 0.7);
+    border-bottom: 1px solid #5e3a8b;
+    overflow-y: auto;
+    max-height: 250px;
+}
+
+.technique-selector h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.1rem;
+    color: #c2a6e8;
+}
+
+.technique-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+}
+
+.technique-item {
+    background-color: rgba(54, 38, 79, 0.6);
+    border: 1px solid #5e3a8b;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.technique-item:hover:not(.disabled) {
+    background-color: rgba(74, 58, 99, 0.6);
+    border-color: #9a7bcc;
+}
+
+.technique-item.selected {
+    background-color: rgba(94, 78, 119, 0.8);
+    border-color: #c2a6e8;
+    box-shadow: 0 0 10px rgba(154, 123, 204, 0.5);
+}
+
+.technique-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.technique-name {
+    font-weight: bold;
+    color: #f5f5f5;
+    margin-bottom: 5px;
+}
+
+.technique-description {
+    font-size: 0.8rem;
+    color: #ddd;
+    margin-bottom: 8px;
+}
+
+.technique-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.75rem;
+}
+
+.technique-stats span {
+    background-color: rgba(40, 30, 50, 0.7);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #c2a6e8;
+}
+
+/* 控制面板 */
+.control-panel {
+    padding: 15px;
+    background-color: rgba(30, 20, 40, 0.7);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.time-selector {
+    display: flex;
+    align-items: center;
+}
+
+.time-selector label {
+    margin-right: 10px;
+    color: #c2a6e8;
+}
+
+.time-selector select {
+    background-color: rgba(40, 30, 50, 0.7);
+    border: 1px solid #5e3a8b;
+    padding: 5px 10px;
+    color: #f5f5f5;
+    border-radius: 4px;
+}
+
+.start-cultivation-btn {
+    padding: 8px 15px;
+    background: linear-gradient(to right, #5e3a8b, #9a7bcc);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.start-cultivation-btn:hover:not(:disabled) {
+    background: linear-gradient(to right, #7a5bac, #b08be0);
+    box-shadow: 0 0 10px rgba(154, 123, 204, 0.5);
+}
+
+.start-cultivation-btn:disabled {
+    background: linear-gradient(to right, #444, #666);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* 通知区域 */
+.notification-area {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    max-width: 80vw;
+    z-index: 2000;
+}
+
+.notification {
+    background-color: rgba(30, 20, 40, 0.9);
+    border-left: 4px solid #9a7bcc;
+    color: #f5f5f5;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    font-size: 0.9rem;
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.notification.fade-in {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification.fade-out {
+    transform: translateX(120%);
+    opacity: 0;
+}
+
+.notification-info {
+    border-left-color: #4a90e2;
+}
+
+.notification-success {
+    border-left-color: #5cb85c;
+}
+
+.notification-warning {
+    border-left-color: #f0ad4e;
+}
+
+.notification-error {
+    border-left-color: #d9534f;
+}
+
+/* 突破动画 */
+.breakthrough-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(20, 15, 25, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.breakthrough-character {
+    position: relative;
+    width: 100px;
+    height: 150px;
+    margin-bottom: 20px;
+}
+
+.breakthrough-character .figure {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(154, 123, 204, 0.3);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.breakthrough-character .aura {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(154, 123, 204, 0.5) 0%, rgba(154, 123, 204, 0) 70%);
+    animation: expand 2s infinite;
+}
+
+.breakthrough-info {
+    text-align: center;
+}
+
+.breakthrough-status {
+    font-size: 1.2rem;
+    color: #f5f5f5;
+    margin-bottom: 10px;
+}
+
+.breakthrough-progress {
+    width: 0%;
+    height: 4px;
+    background: linear-gradient(to right, #5e3a8b, #9a7bcc);
+    border-radius: 2px;
+    transition: width 0.05s linear;
+}
+
+.breakthrough-animation.success .breakthrough-status {
+    color: #5cb85c;
+}
+
+.breakthrough-animation.failure .breakthrough-status {
+    color: #d9534f;
+}
+
+/* 修炼动画 */
+.meditation-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(20, 15, 25, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.meditation-character {
+    position: relative;
+    width: 100px;
+    height: 150px;
+    margin-bottom: 30px;
+}
+
+.meditation-character .figure {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(154, 123, 204, 0.3);
+    border-radius: 50%;
+    animation: breathe 4s infinite;
+}
+
+.meditation-character .aura {
+    position: absolute;
+    top: -30px;
+    left: -30px;
+    right: -30px;
+    bottom: -30px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(154, 123, 204, 0.3) 0%, rgba(154, 123, 204, 0) 70%);
+    animation: glow 4s infinite;
+}
+
+.meditation-info {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.time-counter {
+    font-size: 1.2rem;
+    color: #c2a6e8;
+    margin-bottom: 10px;
+}
+
+.gain-counter {
+    font-size: 1.5rem;
+    color: #f5f5f5;
+    font-weight: bold;
+}
+
+.meditation-skip {
+    padding: 5px 15px;
+    background-color: rgba(94, 58, 139, 0.6);
+    border: 1px solid #9a7bcc;
+    color: #f5f5f5;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.meditation-skip:hover {
+    background-color: rgba(154, 123, 204, 0.6);
+}
+
+.meditation-animation.completed .figure {
+    animation: flash 0.5s;
+}
+
+/* 大突破特效 */
+.breakthrough-effect {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 3000;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 1;
+    transition: opacity 1s;
+}
+
+.breakthrough-effect.fade-out {
+    opacity: 0;
+}
+
+.light-column {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(154, 123, 204, 0) 0%, rgba(154, 123, 204, 0.8) 50%, rgba(154, 123, 204, 0) 100%);
+    animation: pulse-column 3s infinite;
+}
+
+.particle {
+    position: absolute;
+    background-color: #9a7bcc;
+    border-radius: 50%;
+    opacity: 0.7;
+    animation: float-up 3s ease-out forwards;
+}
+
+/* 动画关键帧 */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes breathe {
+    0% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.7; }
+}
+
+@keyframes expand {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes glow {
+    0% { opacity: 0.2; }
+    50% { opacity: 0.5; }
+    100% { opacity: 0.2; }
+}
+
+@keyframes flash {
+    0% { background-color: rgba(154, 123, 204, 0.3); }
+    50% { background-color: rgba(255, 255, 255, 0.9); }
+    100% { background-color: rgba(154, 123, 204, 0.3); }
+}
+
+@keyframes pulse-column {
+    0% { opacity: 0.5; width: 150px; }
+    50% { opacity: 0.8; width: 200px; }
+    100% { opacity: 0.5; width: 150px; }
+}
+
+@keyframes float-up {
+    0% { bottom: 0; transform: translateX(0); opacity: 0.7; }
+    100% { bottom: 100%; transform: translateX(50px); opacity: 0; }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .cultivation-container {
+        width: 95vw;
+        max-height: 95vh;
+    }
+    
+    .technique-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .control-panel {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .time-selector {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .start-cultivation-btn {
+        width: 100%;
+    }
+}
+
+/* 修炼界面可见时防止滚动 */
+body.cultivation-active {
+    overflow: hidden;
+}
+
+/* 闪光效果 */
+.flash {
+    animation: text-flash 1s;
+}
+
+@keyframes text-flash {
+    0% { text-shadow: 0 0 5px rgba(154, 123, 204, 0.8); }
+    50% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(154, 123, 204, 1); }
+    100% { text-shadow: 0 0 5px rgba(154, 123, 204, 0.8); }
+} 

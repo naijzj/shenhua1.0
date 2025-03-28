@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>因果系统 - 神话·天命</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="karma-styles.css">
+    <style>
+        .karma-details-container {
+            max-width: 1100px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        
+        .karma-details-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .karma-details-title {
+            color: #9a7bcc;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .karma-details-subtitle {
+            color: #ccc;
+            font-size: 1rem;
+        }
+        
+        .karma-main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        
+        .karma-sidebar {
+            background-color: rgba(22, 33, 62, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        
+        .karma-status-card {
+            background-color: rgba(30, 30, 60, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .karma-value-large {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #9a7bcc;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .karma-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .karma-stats-item {
+            text-align: center;
+        }
+        
+        .karma-stats-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #f5f5f5;
+        }
+        
+        .karma-stats-label {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        .karma-actions {
+            margin-top: 20px;
+        }
+        
+        .karma-action-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: rgba(154, 123, 204, 0.3);
+            border: 1px solid #9a7bcc;
+            color: #f5f5f5;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .karma-action-btn:hover {
+            background-color: rgba(154, 123, 204, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .karma-main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .karma-panel {
+            background-color: rgba(22, 33, 62, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .panel-title {
+            color: #9a7bcc;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(154, 123, 204, 0.3);
+        }
+        
+        .events-timeline {
+            position: relative;
+            margin-left: 20px;
+            padding-left: 20px;
+            border-left: 2px solid rgba(154, 123, 204, 0.5);
+        }
+        
+        .timeline-event {
+            position: relative;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        
+        .timeline-event:last-child {
+            border-bottom: none;
+        }
+        
+        .timeline-event::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: -29px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #9a7bcc;
+            box-shadow: 0 0 8px #9a7bcc;
+        }
+        
+        .timeline-event.triggered::before {
+            background-color: #4caf50;
+            box-shadow: 0 0 8px #4caf50;
+        }
+        
+        .timeline-event.upcoming::before {
+            background-color: #ff9800;
+            box-shadow: 0 0 8px #ff9800;
+        }
+        
+        .timeline-event-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #f5f5f5;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-event-threshold {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        
+        .timeline-event-desc {
+            color: #ccc;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .karma-history {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .history-entry {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .history-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .history-desc {
+            flex: 1;
+            color: #ccc;
+        }
+        
+        .history-value {
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        
+        .history-value.positive {
+            color: #4caf50;
+        }
+        
+        .history-value.negative {
+            color: #f44336;
+        }
+        
+        .history-date {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        
+        .karma-info-panel {
+            color: #ccc;
+            line-height: 1.6;
+        }
+        
+        .karma-info-panel p {
+            margin-bottom: 15px;
+        }
+        
+        .karma-benefits-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .karma-benefits-list li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .karma-benefits-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #9a7bcc;
+            font-size: 1.2em;
+        }
+        
+        /* 响应式布局 */
+        @media (max-width: 768px) {
+            .karma-main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .karma-sidebar {
+                position: static;
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1 class="game-title">神话·天命</h1>
+            <div class="player-info">
+                <span>因果系统</span>
+            </div>
+        </header>
+        
+        <main class="game-content">
+            <div class="karma-details-container">
+                <div class="karma-details-header">
+                    <h1 class="karma-details-title">因果系统</h1>
+                    <p class="karma-details-subtitle">善恶皆有报，因果循环，天道轮回</p>
+                </div>
+                
+                <div class="karma-main-content">
+                    <aside class="karma-sidebar">
+                        <div class="karma-status-card">
+                            <h3>当前因果值</h3>
+                            <div class="karma-value-large" id="karma-value">0</div>
+                            <div class="karma-progress">
+                                <div class="karma-bar" id="karma-progress-bar"></div>
+                            </div>
+                            <div class="karma-stats">
+                                <div class="karma-stats-item">
+                                    <div class="karma-stats-value" id="good-karma">0</div>
+                                    <div class="karma-stats-label">善行</div>
+                                </div>
+                                <div class="karma-stats-item">
+                                    <div class="karma-stats-value" id="evil-karma">0</div>
+                                    <div class="karma-stats-label">恶行</div>
+                                </div>
+                                <div class="karma-stats-item">
+                                    <div class="karma-stats-value" id="karma-rank">凡人</div>
+                                    <div class="karma-stats-label">道心</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="karma-actions">
+                            <button class="karma-action-btn" id="btn-generate-event">触发下一事件</button>
+                            <button class="karma-action-btn" id="btn-add-karma">随机增加因果</button>
+                            <button class="karma-action-btn" id="btn-reduce-karma">随机减少因果</button>
+                            <button class="karma-action-btn" id="btn-reset-karma">重置因果值</button>
+                            <a href="index.html" class="karma-action-btn">返回主界面</a>
+                            <a href="karma-test.html" class="karma-action-btn">因果测试页</a>
+                        </div>
+                    </aside>
+                    
+                    <div class="karma-main-panel">
+                        <section class="karma-panel">
+                            <h2 class="panel-title">因果事件时间线</h2>
+                            <div class="events-timeline" id="events-timeline">
+                                <!-- 事件时间线将通过JS动态加载 -->
+                            </div>
+                        </section>
+                        
+                        <section class="karma-panel">
+                            <h2 class="panel-title">历史记录</h2>
+                            <div class="karma-history" id="karma-history">
+                                <!-- 历史记录将通过JS动态加载 -->
+                                <div class="history-entry">
+                                    <div class="history-desc">
+                                        系统初始化
+                                        <div class="history-date">片刻之前</div>
+                                    </div>
+                                    <div class="history-value">0</div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        <section class="karma-panel karma-info-panel">
+                            <h2 class="panel-title">因果系统说明</h2>
+                            <p>因果系统是修真世界中衡量修士行为善恶的重要指标。你的每一个选择、每一个行动都会影响你的因果值，进而影响你的修真之路。</p>
+                            <p>积累善因，引来善果；种下恶因，招致恶报。因果值将决定你在修真界中的定位，以及你未来可能遭遇的机缘或劫难。</p>
+                            
+                            <h3 style="color: #9a7bcc; margin: 15px 0 10px;">因果影响</h3>
+                            <ul class="karma-benefits-list">
+                                <li>高因果值可能引来天道垂青，获得突破机缘</li>
+                                <li>低因果值可能招致天罚，面临修为停滞甚至倒退</li>
+                                <li>不同的因果区间会触发不同的事件</li>
+                                <li>因果值会影响与NPC的互动和门派的接纳程度</li>
+                                <li>某些特殊功法和秘境需要特定因果值区间才能修炼或进入</li>
+                            </ul>
+                            
+                            <p>谨记：修真之路漫长，一时的善恶未必立见因果，但天道循环，报应不爽，终有一日，种下的因将结出相应的果。</p>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script type="module">
+        import KarmaManager from './karma-manager.js';
+        import { KARMA_EVENTS, getNextEvents, CULTIVATION_TIERS } from './events.js';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // 更新界面
+            updateKarmaDisplay();
+            
+            // 创建事件时间线
+            createEventsTimeline();
+            
+            // 历史记录已经硬编码，暂不动态加载
+            
+            // 绑定按钮事件
+            document.getElementById('btn-generate-event').addEventListener('click', generateNextEvent);
+            document.getElementById('btn-add-karma').addEventListener('click', addRandomKarma);
+            document.getElementById('btn-reduce-karma').addEventListener('click', reduceRandomKarma);
+            document.getElementById('btn-reset-karma').addEventListener('click', resetKarma);
+            
+            // 监听因果变化，更新界面
+            KarmaManager.onKarmaChange((newValue) => {
+                updateKarmaDisplay();
+                updateEventsTimeline();
+            });
+        });
+        
+        function updateKarmaDisplay() {
+            const karmaData = KarmaManager.getKarmaData();
+            const karmaValue = Math.floor(karmaData.karma);
+            
+            // 更新因果值显示
+            document.getElementById('karma-value').textContent = karmaValue;
+            document.getElementById('good-karma').textContent = Math.floor(karmaData.goodDeeds);
+            document.getElementById('evil-karma').textContent = Math.floor(karmaData.evilDeeds);
+            
+            // 更新进度条
+            const progressBar = document.getElementById('karma-progress-bar');
+            
+            // 获取当前和下一境界
+            let currentTier = '练气期';
+            let nextTier = '筑基期';
+            let currentThreshold = 0;
+            let nextThreshold = 100;
+            
+            // 找到当前和下一境界
+            const tiers = Object.entries(CULTIVATION_TIERS);
+            for (let i = 0; i < tiers.length; i++) {
+                const [tier, threshold] = tiers[i];
+                
+                if (karmaValue >= threshold) {
+                    currentTier = tier;
+                    currentThreshold = threshold;
+                    
+                    // 设置下一个境界
+                    if (i < tiers.length - 1) {
+                        nextTier = tiers[i + 1][0];
+                        nextThreshold = tiers[i + 1][1];
+                    } else {
+                        // 已经是最高境界
+                        nextTier = tier;
+                        nextThreshold = threshold;
+                    }
+                } else {
+                    break;
+                }
+            }
+            
+            // 计算进度
+            const progress = currentThreshold === nextThreshold ? 100 : 
+                ((karmaValue - currentThreshold) / (nextThreshold - currentThreshold)) * 100;
+                
+            progressBar.style.width = `${Math.min(100, progress)}%`;
+            
+            // 更新道心等级
+            let karmaRank = '';
+            const goodRatio = karmaData.goodDeeds / (karmaData.goodDeeds + karmaData.evilDeeds || 1);
+            
+            if (goodRatio > 0.8) {
+                karmaRank = '至善';
+                progressBar.style.backgroundColor = '#4c8dff';
+            } else if (goodRatio > 0.6) {
+                karmaRank = '向善';
+                progressBar.style.backgroundColor = '#7986cb';
+            } else if (goodRatio > 0.4) {
+                karmaRank = '中庸';
+                progressBar.style.backgroundColor = '#9a7bcc';
+            } else if (goodRatio > 0.2) {
+                karmaRank = '狠戾';
+                progressBar.style.backgroundColor = '#c75b5b';
+            } else {
+                karmaRank = '至邪';
+                progressBar.style.backgroundColor = '#f44336';
+            }
+            
+            document.getElementById('karma-rank').textContent = karmaRank;
+        }
+        
+        function createEventsTimeline() {
+            const timelineContainer = document.getElementById('events-timeline');
+            const triggeredEvents = Array.from(KarmaManager.triggeredEvents);
+            
+            // 先清空容器
+            timelineContainer.innerHTML = '';
+            
+            // 按阈值排序事件
+            const sortedEvents = [...KARMA_EVENTS].sort((a, b) => a.karmaThreshold - b.karmaThreshold);
+            
+            // 获取当前因果值和下一个要触发的事件
+            const currentKarma = KarmaManager.getKarma();
+            const nextEvents = getNextEvents(currentKarma);
+            const nextEventIds = nextEvents.map(e => e.id);
+            
+            // 添加事件到时间线
+            sortedEvents.forEach(event => {
+                const eventElement = document.createElement('div');
+                const isTriggered = triggeredEvents.includes(event.id);
+                const isUpcoming = nextEventIds.includes(event.id);
+                
+                eventElement.className = `timeline-event ${isTriggered ? 'triggered' : ''} ${isUpcoming ? 'upcoming' : ''}`;
+                
+                eventElement.innerHTML = `
+                    <div class="timeline-event-title">${event.title}</div>
+                    <div class="timeline-event-threshold">因果阈值: ${event.karmaThreshold} ${isTriggered ? '(已触发)' : isUpcoming ? '(即将发生)' : ''}</div>
+                    <div class="timeline-event-desc">${event.description}</div>
+                `;
+                
+                timelineContainer.appendChild(eventElement);
+            });
+        }
+        
+        function updateEventsTimeline() {
+            // 简单地重新创建时间线
+            createEventsTimeline();
+        }
+        
+        function generateNextEvent() {
+            const nextEvents = getNextEvents(KarmaManager.getKarma());
+            if (nextEvents && nextEvents.length > 0) {
+                const nextEvent = nextEvents[0];
+                // 增加因果值到触发阈值
+                const neededKarma = nextEvent.karmaThreshold - KarmaManager.getKarma();
+                if (neededKarma > 0) {
+                    KarmaManager.updateKarma(neededKarma);
+                    addHistoryEntry(`增加因果值以触发事件: ${nextEvent.title}`, neededKarma);
+                }
+            } else {
+                alert('没有更多可触发的事件！');
+            }
+        }
+        
+        function addRandomKarma() {
+            // 随机增加10-50的因果值
+            const amount = Math.floor(Math.random() * 41) + 10;
+            KarmaManager.updateKarma(amount);
+            addHistoryEntry('随机增加因果值', amount);
+        }
+        
+        function reduceRandomKarma() {
+            // 随机减少10-50的因果值
+            const amount = -(Math.floor(Math.random() * 41) + 10);
+            KarmaManager.updateKarma(amount);
+            addHistoryEntry('随机减少因果值', amount);
+        }
+        
+        function resetKarma() {
+            if (confirm('确定要重置所有因果数据吗？此操作不可逆!')) {
+                localStorage.removeItem('playerKarma');
+                localStorage.removeItem('triggeredEvents');
+                location.reload();
+            }
+        }
+        
+        function addHistoryEntry(description, value) {
+            const historyContainer = document.getElementById('karma-history');
+            const entry = document.createElement('div');
+            entry.className = 'history-entry';
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            
+            entry.innerHTML = `
+                <div class="history-desc">
+                    ${description}
+                    <div class="history-date">${timeString}</div>
+                </div>
+                <div class="history-value ${value >= 0 ? 'positive' : 'negative'}">${value >= 0 ? '+' + value : value}</div>
+            `;
+            
+            // 添加到容器顶部
+            historyContainer.insertBefore(entry, historyContainer.firstChild);
+        }
+    </script>
+</body>
+</html> 
